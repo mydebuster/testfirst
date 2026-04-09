@@ -1,14 +1,21 @@
--- PS99 RAID MASTER (Активация: L | Без проверки мира)
+-- PS99 RAID MASTER (Активация: L | Задержка 2 сек)
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 
-local isRunning = false -- Защита от двойного запуска
+local isRunning = false 
 
 -----------------------------------------------------------
--- МАРШРУТ (Координаты)
+-- НАСТРОЙКИ
+-----------------------------------------------------------
+local MOVE_SPEED = 65      -- Скорость полета
+local ACTION_DELAY = 2.0    -- Задержка между действиями (2 секунды)
+local INTERACT_WAIT = 1.2   -- Время на саму анимацию нажатия E
+
+-----------------------------------------------------------
+-- МАРШРУТ
 -----------------------------------------------------------
 local RaidPath = {
     {Type = "Move", Pos = Vector3.new(-525.31, 109.14, -5702.72)}, -- Начало
@@ -56,10 +63,8 @@ local RaidPath = {
 }
 
 -----------------------------------------------------------
--- НАСТРОЙКИ ЛОГИКИ
+-- ФУНКЦИИ ЛОГИКИ
 -----------------------------------------------------------
-local MOVE_SPEED = 65 
-local INTERACT_DELAY = 1.2 
 
 local function moveTo(pos)
     local char = Player.Character
@@ -69,18 +74,24 @@ local function moveTo(pos)
     local dist = (root.Position - pos).Magnitude
     local info = TweenInfo.new(dist / MOVE_SPEED, Enum.EasingStyle.Linear)
     local tween = TweenService:Create(root, info, {CFrame = CFrame.new(pos)})
+    
     tween:Play()
-    tween.Completed:Wait()
+    tween.Completed:Wait() -- Ждем окончания полета
+    print("Прибыл в точку. Жду " .. ACTION_DELAY .. " сек.")
+    task.wait(ACTION_DELAY) -- Задержка 2 сек после прилета
 end
 
 local function pressE()
+    print("Нажимаю E...")
     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
     task.wait(0.1)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-    task.wait(INTERACT_DELAY)
+    task.wait(INTERACT_WAIT) -- Время на срабатывание кнопки
+    print("Взаимодействие завершено. Жду " .. ACTION_DELAY .. " сек.")
+    task.wait(ACTION_DELAY) -- Задержка 2 сек после взаимодействия
 end
 
--- Авто-коллектор (Магнит)
+-- Авто-коллектор (Магнит для сфер)
 task.spawn(function()
     local Network = game:GetService("ReplicatedStorage"):WaitForChild("Network")
     while true do
@@ -100,36 +111,35 @@ task.spawn(function()
     end
 end)
 
--- Основная функция запуска маршрута
+-- Основной цикл рейда
 local function runRaid()
     if isRunning then return end
     isRunning = true
     
-    print(">>> ЗАПУСК МАРШРУТА...")
+    print(">>> СТАРТ МАРШРУТА...")
     
     for i, step in ipairs(RaidPath) do
-        print("Двигаюсь к точке " .. i .. " [" .. step.Type .. "]")
+        print("Шаг №" .. i .. " из " .. #RaidPath)
         moveTo(step.Pos)
         
         if step.Type == "Interact" then
             pressE()
         end
-        task.wait(0.1)
     end
     
-    print(">>> МАРШРУТ ЗАВЕРШЕН!")
+    print(">>> МАРШРУТ ПОЛНОСТЬЮ ПРОЙДЕН!")
     isRunning = false
 end
 
--- Слушатель кнопки L
+-- Кнопка активации
 UserInputService.InputBegan:Connect(function(input, processed)
     if not processed and input.KeyCode == Enum.KeyCode.L then
         if not isRunning then
             runRaid()
         else
-            warn("Скрипт уже в процессе работы!")
+            warn("Скрипт уже выполняет маршрут!")
         end
     end
 end)
 
-print("Скрипт готов. Нажми 'L' для запуска движения.")
+print("Скрипт готов! Нажми 'L', когда зайдешь в рейд.")
