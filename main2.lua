@@ -9,7 +9,7 @@ local isRunning = false
 
 -- НАСТРОЙКИ
 local MOVE_SPEED = 70       
-local ACTION_DELAY = 5.0     
+local ACTION_DELAY = 2.0     
 local INTERACT_WAIT = 1.2    
 local CLICK_COORDS = {x = 170, y = 325} -- Координаты твоей кнопки AutoRaid
 
@@ -32,7 +32,7 @@ local RaidSections = {
     { Name = "Комната 8 (Кнопка + Сундук)", Points = { {Type = "Move", Pos = Vector3.new(761.29, 109.14, -5741.07)}, {Type = "Move", Pos = Vector3.new(810.50, 109.14, -5708.46)}, {Type = "Move", Pos = Vector3.new(861.37, 109.14, -5662.01)}, {Type = "Interact", Pos = Vector3.new(815.10, 109.14, -5761.67)}, {Type = "Move", Pos = Vector3.new(812.59, 109.02, -5905.14)}, {Type = "Move", Pos = offset(Vector3.new(812.59, 109.02, -5905.14), 25, 25)}, {Type = "Move", Pos = offset(Vector3.new(812.59, 109.02, -5905.14), -25, -25)}, } },
     { Name = "Комната 9", Points = { {Type = "Move", Pos = Vector3.new(950.32, 110.50, -5700.28)}, {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), -15, -15)}, {Type = "Move", Pos = Vector3.new(996.28, 110.53, -5702.81)}, {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), -15, -15)}, {Type = "Move", Pos = Vector3.new(970, 110.53, -5700)}, } },
     { Name = "Комната НАГРАД", Points = { {Type = "Interact", Pos = Vector3.new(1094.57, 112.14, -5717.70)}, {Type = "Interact", Pos = Vector3.new(1101.89, 110.85, -5681.42)}, {Type = "Interact", Pos = Vector3.new(1164.13, 110.85, -5677.97)}, {Type = "Interact", Pos = Vector3.new(1165.39, 110.85, -5721.62)}, {Type = "Interact", Pos = Vector3.new(1135.07, 111.20, -5783.95)}, } },
-    { Name = "Финал", Points = { {Type = "Move", Pos = Vector3.new(1131.03, 109.94, -5636.84)}, {Type = "Move", Pos = Vector3.new(1130.40, 109.45, -5822.93)}, {Type = "Move", Pos = Vector3.new(1208.86, 109.94, -5701.94)}, } }
+    { Name = "Финал", Points = { {Type = "Move", Pos = Vector3.new(1131.03, 109.94, -5636.84)}, {Type = "Move", Pos = Vector3.new(1130.40, 109.45, -5422.93)} } }
 }
 
 -----------------------------------------------------------
