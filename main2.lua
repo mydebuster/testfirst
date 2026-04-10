@@ -159,7 +159,7 @@ local function startMasterLoop()
 
         print(">>> ЖДУ 12 СЕКУНД... <<<")
         local waitStart = tick()
-        repeat task.wait(0.5) until tick() - waitStart >= 12 or not masterSwitch
+        repeat task.wait(0.5) until tick() - waitStart >= 15 or not masterSwitch
 
         if not masterSwitch then break end
 
