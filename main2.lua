@@ -29,7 +29,8 @@ local RaidSections = {
         Name = "Комната 3 (Макс Сбор)", 
         Points = { 
             {Type = "Move", Pos = Vector3.new(-193.19, 109.14, -5701.66)}, 
-            {Type = "Move", Pos = Vector3.new(-147.92, 109.14, -5698.76)}, 
+            {Type = "Move", Pos = Vector3.new(-147.92, 109.14, -5698.76)},
+            {Type = "Move", Pos = Vector3.new(-147.92, 109.14, -5698.76)},
             {Type = "Move", Pos = offset(Vector3.new(-147.92, 109.14, -5698.76), 20, 30)}, 
             {Type = "Move", Pos = offset(Vector3.new(-147.92, 109.14, -5698.76), -25, -10)}, 
             {Type = "Interact", Pos = Vector3.new(-142.38, 109.14, -5771.87)}, -- Кнопка
