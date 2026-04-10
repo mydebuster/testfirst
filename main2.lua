@@ -142,9 +142,7 @@ local function startRaid()
     print(">>> ОЖИДАНИЕ 12 СЕКУНД ПЕРЕД ВТОРЫМ НАЖАТИЕМ... <<<")
     task.wait(12)
     physicalClickButton() -- Второе нажатие
-    print(">>> ОЖИДАНИЕ 12 СЕКУНД ПЕРЕД ВТОРЫМ НАЖАТИЕМ... <<<")
-    task.wait(12)
-    physicalClickButton() -- Второе нажатие
+    
 
     print(">>> ВСЕ ДЕЙСТВИЯ ЗАВЕРШЕНЫ <<<")
     isRunning = false
@@ -152,7 +150,7 @@ end
 
 -- Активация на кнопку L
 UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.KeyCode == Enum.KeyCode.K then
+    if not processed and input.KeyCode == Enum.KeyCode.L then
         startRaid()
     end
 end)
