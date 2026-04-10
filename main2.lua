@@ -11,7 +11,7 @@ local isRunning = false
 local MOVE_SPEED = 70       
 local ACTION_DELAY = 3.0     -- Пауза 5 секунд
 local INTERACT_WAIT = 1.2    
-local CLICK_X, CLICK_Y = 225, 530 -- Координаты кнопки AutoRaid
+local CLICK_X, CLICK_Y = 240, 530 -- Координаты кнопки AutoRaid
 
 -- Функция смещения координат
 local function offset(vec, ox, oz)
