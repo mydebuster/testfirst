@@ -11,7 +11,7 @@ local masterSwitch = false -- Главный выключатель
 local MOVE_SPEED = 70
 local ACTION_DELAY = 3.5      
 local INTERACT_WAIT = 1.2
-local CLICK_X, CLICK_Y = 240, 530 -- Координаты твоей кнопки
+local CLICK_X, CLICK_Y = 240, 530 -- Координаты кнопки AutoRaid
 
 -- Функция смещения координат
 local function offset(vec, ox, oz)
@@ -65,9 +65,7 @@ local RaidSections = {
         } 
     },
     { Name = "Комната 9", Points = { {Type = "Move", Pos = Vector3.new(950.32, 110.50, -5700.28)}, {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), -15, -15)}, {Type = "Move", Pos = Vector3.new(996.28, 110.53, -5702.81)}, {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), -15, -15)}, {Type = "Move", Pos = Vector3.new(970, 110.53, -5700)}, } },
-    { Name = "Комната НАГРАД", Points = { {Type = "Interact", Pos = Vector3.new(1094.57, 112.14, -5717.70)}, {Type = "Interact", Pos = Vector3.new(1101.89, 110.85, -5681.42)}, {Type = "Interact", Pos = Vector3.new(1164.13, 110.85, -5677.97)},  {Type = "Interact", Pos = Vector3.new(1135.07, 111.20, -5783.95)}, } },
-    
-    }
+    { Name = "Комната НАГРАД", Points = { {Type = "Interact", Pos = Vector3.new(1094.57, 112.14, -5717.70)}, {Type = "Interact", Pos = Vector3.new(1101.89, 110.85, -5681.42)}, {Type = "Interact", Pos = Vector3.new(1164.13, 110.85, -5677.97)}, {Type = "Interact", Pos = Vector3.new(1135.07, 111.20, -5783.95)}, } }
 }
 
 -----------------------------------------------------------
@@ -90,7 +88,6 @@ local function moveTo(pos)
     local tween = TweenService:Create(root, info, {CFrame = CFrame.new(pos)})
     tween:Play()
     
-    -- Ожидание конца твина с проверкой на выключение
     local start = tick()
     repeat task.wait(0.1) until tween.PlaybackState == Enum.PlaybackState.Completed or not masterSwitch
     if not masterSwitch then tween:Cancel() return end
@@ -107,7 +104,7 @@ local function pressE()
     task.wait(ACTION_DELAY)
 end
 
--- Авто-сборщик монет
+-- Сборщик монет
 task.spawn(function()
     local Net = game:GetService("ReplicatedStorage"):WaitForChild("Network")
     while true do
@@ -123,13 +120,12 @@ task.spawn(function()
     end
 end)
 
--- Основной процесс (БЕСКОНЕЧНЫЙ ЦИКЛ)
+-- Основной процесс
 local function startMasterLoop()
-    print(">>> ЗАПУСК ЦИКЛА РЕЙДА <<<")
-    
+    print(">>> ЦИКЛ ЗАПУЩЕН <<<")
     while masterSwitch do
-        -- 1. Движение по комнатам
-        moveTo(Vector3.new(-525.31, 109.14, -5702.72)) -- Стартовая точка
+        -- Идем на старт
+        moveTo(Vector3.new(-525.31, 109.14, -5702.72))
 
         for _, section in ipairs(RaidSections) do
             if not masterSwitch then break end
@@ -143,52 +139,37 @@ local function startMasterLoop()
 
         if not masterSwitch then break end
 
-        -- 2. Клики Авторейда
         print(">>> МАРШРУТ ПРОЙДЕН. ВКЛЮЧАЮ AUTO RAID... <<<")
         task.wait(1)
-        physicalSingleClick() -- Клик 1
+        physicalSingleClick() -- ВКЛЮЧИТЬ
 
-        print(">>> ЖДУ 12 СЕКУНД... <<<")
+        print(">>> ОЖИДАНИЕ 12 СЕКУНД... <<<")
         local waitStart = tick()
-        repeat task.wait(0.5) until tick() - waitStart >= 15 or not masterSwitch
+        repeat task.wait(0.5) until (tick() - waitStart >= 12) or not masterSwitch
 
         if not masterSwitch then break end
 
         print(">>> ВЫКЛЮЧАЮ AUTO RAID... <<<")
-        physicalSingleClick() -- Клик 2
+        physicalSingleClick() -- ВЫКЛЮЧИТЬ
         
-        print(">>> ЦИКЛ ЗАВЕРШЕН. НАЧИНАЮ ЗАНОВО... <<<")
+        print(">>> ПЕРЕХОД НА НОВЫЙ КРУГ <<<")
         task.wait(2)
     end
-    
-    print(">>> СКРИПТ ПОЛНОСТЬЮ ОСТАНОВЛЕН <<<")
+    print(">>> ЦИКЛ ОСТАНОВЛЕН <<<")
 end
 
--- СЛУШАТЕЛЬ КНОПОК
+-- КНОПКИ
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
-    
-    -- L - Запуск
     if input.KeyCode == Enum.KeyCode.L then
         if not masterSwitch then
             masterSwitch = true
             task.spawn(startMasterLoop)
-        else
-            warn("Скрипт уже запущен!")
         end
-    end
-    
-    -- X - Остановка
-    if input.KeyCode == Enum.KeyCode.X then
-        if masterSwitch then
-            masterSwitch = false
-            print("ОСТАНОВКА СКРИПТА...")
-        end
+    elseif input.KeyCode == Enum.KeyCode.X then
+        masterSwitch = false
+        print("ВЫКЛЮЧЕНИЕ...")
     end
 end)
 
-print("------------------------------------------")
-print("Гарнитура готова!")
-print("Нажми 'L' для запуска (бесконечный цикл).")
-print("Нажми 'X' для полной остановки.")
-print("------------------------------------------")
+print("L - Старт | X - Стоп")
