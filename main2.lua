@@ -9,7 +9,7 @@ local isRunning = false
 
 -- НАСТРОЙКИ
 local MOVE_SPEED = 70
-local ACTION_DELAY = 3.0      -- Пауза между точками
+local ACTION_DELAY = 4.0      -- Пауза между точками
 local INTERACT_WAIT = 1.2
 local CLICK_X, CLICK_Y = 240, 530 -- Твои новые координаты кнопки AutoRaid
 
