@@ -1,4 +1,4 @@
--- PS99 RAID MASTER (Цикличный | Старт: L | Стоп: X)
+-- PS99 RAID MASTER (FIXED STRUCTURE | L - Start, X - Stop)
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
@@ -8,18 +8,18 @@ local Player = Players.LocalPlayer
 local masterSwitch = false 
 
 -- НАСТРОЙКИ
-local MOVE_SPEED = 75
+local MOVE_SPEED = 70
 local ACTION_DELAY = 3.5      
 local INTERACT_WAIT = 1.2
-local CLICK_X, CLICK_Y = 240, 530 -- Твои координаты кнопки AutoRaid
+local CLICK_X, CLICK_Y = 240, 530 -- Твои координаты кнопки
 
--- Функция смещения координат
+-- Функция смещения
 local function offset(vec, ox, oz)
     return Vector3.new(vec.X + (ox or 0), vec.Y, vec.Z + (oz or 0))
 end
 
 -----------------------------------------------------------
--- МАРШРУТ
+-- МАРШРУТ (Исправленная структура)
 -----------------------------------------------------------
 local RaidSections = {
     { Name = "Room 1", Points = { {Type = "Move", Pos = Vector3.new(-506.38, 109.14, -5721.69)}, {Type = "Move", Pos = offset(Vector3.new(-506.38, 109.14, -5721.69), 15, 15)}, {Type = "Move", Pos = Vector3.new(-447.38, 109.14, -5685.63)}, {Type = "Move", Pos = offset(Vector3.new(-447.38, 109.14, -5685.63), -15, 15)}, {Type = "Move", Pos = Vector3.new(-443.99, 109.14, -5727.37)}, {Type = "Move", Pos = offset(Vector3.new(-443.99, 109.14, -5727.37), 15, -15)}, {Type = "Move", Pos = Vector3.new(-445, 109.14, -5705)}, } },
@@ -28,33 +28,23 @@ local RaidSections = {
     { Name = "Room 4", Points = { {Type = "Move", Pos = Vector3.new(-11.94, 109.14, -5701.22)}, {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), 20, 20)}, {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), -20, -20)}, {Type = "Move", Pos = Vector3.new(32.07, 109.14, -5696.34)}, {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), -15, -15)}, {Type = "Move", Pos = Vector3.new(10, 109.14, -5700)}, } },
     { Name = "Room 5", Points = { {Type = "Move", Pos = Vector3.new(126.31, 109.14, -5688.38)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 20, 0)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 0, 20)}, {Type = "Move", Pos = Vector3.new(196.80, 109.14, -5721.58)}, {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), -15, -15)}, {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), 15, 15)}, {Type = "Move", Pos = Vector3.new(160, 109.14, -5700)}, } },
     { Name = "Room 6", Points = { {Type = "Move", Pos = Vector3.new(290.60, 109.14, -5742.09)}, {Type = "Move", Pos = offset(Vector3.new(290.60, 109.14, -5742.09), 30, 10)}, {Type = "Move", Pos = Vector3.new(332.33, 109.14, -5704.45)}, {Type = "Move", Pos = offset(Vector3.new(332.33, 109.14, -5704.45), -20, 20)}, {Type = "Move", Pos = Vector3.new(375.73, 109.14, -5662.99)}, {Type = "Move", Pos = offset(Vector3.new(375.73, 109.14, -5662.99), -20, -10)}, {Type = "Move", Pos = Vector3.new(330, 109.14, -5700)}, } },
-    { Name = "Room 7", Points = { {Type = "Move", Pos = Vector3.new(447.83, 109.14, -5699.78)}, {Type = "Move", Pos = offset(Vector3.new(447.83, 109.14, -5699.78), 10, 10)}, {Type = "Move", Pos = Vector3.new(490.19, 109.14, -5660.09)}, {Type = "Move", Pos = Vector3.new(507.36, 109.20, -5713.30)}, {Type = "Move", Pos = Vector3.new(547.66, 109.14, -5703.40)}, {Type = "Move", Pos = Vector3.new(607.93, 109.14, -5678.70)}, {Type = "Move", Pos = Vector3.new(682.99, 109.14, -5729.26)}, {Type = "Move", Pos = offset(Vector3.new(682.99, 109.14, -5729.26), 25, 25)}, } },
+    { Name = "Room 7", Points = { {Type = "Move", Pos = Vector3.new(447.83, 109.14, -5699.78)}, {Type = "Move", Pos = Vector3.new(490.19, 109.14, -5660.09)}, {Type = "Move", Pos = Vector3.new(507.36, 109.20, -5713.30)}, {Type = "Move", Pos = Vector3.new(547.66, 109.14, -5703.40)}, {Type = "Move", Pos = Vector3.new(607.93, 109.14, -5678.70)}, {Type = "Move", Pos = Vector3.new(682.99, 109.14, -5729.26)}, {Type = "Move", Pos = offset(Vector3.new(682.99, 109.14, -5729.26), 25, 25)}, } },
     { Name = "Room 8", Points = { {Type = "Move", Pos = Vector3.new(761.29, 109.14, -5741.07)}, {Type = "Move", Pos = Vector3.new(810.50, 109.14, -5708.46)}, {Type = "Move", Pos = Vector3.new(861.37, 109.14, -5662.01)}, {Type = "Move", Pos = offset(Vector3.new(810.50, 109.14, -5708.46), 30, 0)}, {Type = "Interact", Pos = Vector3.new(815.10, 109.14, -5761.67)}, {Type = "Move", Pos = Vector3.new(812.59, 109.02, -5905.14)}, {Type = "Move", Pos = offset(Vector3.new(812.59, 109.02, -5905.14), 25, 25)}, {Type = "Move", Pos = offset(Vector3.new(812.59, 109.02, -5905.14), -25, -25)}, {Type = "Move", Pos = offset(Vector3.new(812.59, 109.02, -5905.14), 25, -25)}, {Type = "Move", Pos = offset(Vector3.new(812.59, 109.02, -5905.14), -25, 25)}, {Type = "Move", Pos = offset(Vector3.new(812.59, 109.02, -5905.14), 0, -40)}, {Type = "Move", Pos = offset(Vector3.new(812.59, 109.02, -5905.14), 40, 0)}, } },
     { Name = "Room 9", Points = { {Type = "Move", Pos = Vector3.new(950.32, 110.50, -5700.28)}, {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), -15, -15)}, {Type = "Move", Pos = Vector3.new(996.28, 110.53, -5702.81)}, {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), -15, -15)}, {Type = "Move", Pos = Vector3.new(970, 110.53, -5700)}, } },
-    { Name = "REWARDS", Points = { {Type = "Interact", Pos = Vector3.new(1094.57, 112.14, -5717.70)}, {Type = "Interact", Pos = Vector3.new(1101.89, 110.85, -5681.42)}, {Type = "Interact", Pos = Vector3.new(1164.13, 110.85, -5677.97)}, {Type = "Interact", Pos = Vector3.new(1135.07, 111.20, -5783.95)}, } }
+    { Name = "Rewards", Points = { {Type = "Interact", Pos = Vector3.new(1094.57, 112.14, -5717.70)}, {Type = "Interact", Pos = Vector3.new(1101.89, 110.85, -5681.42)}, {Type = "Interact", Pos = Vector3.new(1164.13, 110.85, -5677.97)}, {Type = "Interact", Pos = Vector3.new(1135.07, 111.20, -5783.95)}, } }
 }
 
 -----------------------------------------------------------
--- ЛОГИКА КЛИКА (Улучшенная)
+-- ЛОГИКА
 -----------------------------------------------------------
 
-local function physicalClick()
+local function physicalSingleClick()
     if not masterSwitch then return end
-    print("Клик по кнопке (", CLICK_X, ",", CLICK_Y, ")")
-    
-    -- 1. Сначала наводим мышь на кнопку (важно для некоторых UI)
-    VirtualInputManager:SendMouseMoveEvent(CLICK_X, CLICK_Y, game)
-    task.wait(0.2)
-    
-    -- 2. Делаем четкое нажатие
-    VirtualInputManager:SendMouseButtonEvent(CLICK_X, CLICK_Y, 0, true, game, 0) -- Нажать
+    print("Клик по кнопке...")
+    VirtualInputManager:SendMouseButtonEvent(CLICK_X, CLICK_Y, 0, true, game, 0)
     task.wait(0.1)
-    VirtualInputManager:SendMouseButtonEvent(CLICK_X, CLICK_Y, 0, false, game, 0) -- Отпустить
+    VirtualInputManager:SendMouseButtonEvent(CLICK_X, CLICK_Y, 0, false, game, 0)
 end
-
------------------------------------------------------------
--- ДВИЖЕНИЕ
------------------------------------------------------------
 
 local function moveTo(pos)
     if not masterSwitch then return end
@@ -81,9 +71,9 @@ end
 
 -- Бесконечный цикл
 local function startMasterLoop()
+    print(">>> СКРИПТ ЗАПУЩЕН (L) <<<")
     while masterSwitch do
-        print(">>> НОВЫЙ КРУГ <<<")
-        moveTo(Vector3.new(-525.31, 109.14, -5702.72)) -- Стартовая точка
+        moveTo(Vector3.new(-525.31, 109.14, -5702.72)) -- Старт
 
         for _, section in ipairs(RaidSections) do
             if not masterSwitch then break end
@@ -97,27 +87,21 @@ local function startMasterLoop()
 
         if not masterSwitch then break end
 
-        -- КЛИК №1 (Включить AutoRaid)
-        print("Клик №1: Включение AutoRaid")
-        physicalClick()
+        print("Включение AutoRaid...")
+        physicalSingleClick()
         
-        -- Ждем 15 секунд
-        print("Ожидание 15 секунд...")
-        local waitStart = tick()
-        repeat task.wait(0.5) until (tick() - waitStart >= 15) or not masterSwitch
-
+        task.wait(12) -- Ждем 12 сек
+        
         if not masterSwitch then break end
-
-        -- КЛИК №2 (Выключить AutoRaid)
-        print("Клик №2: Выключение AutoRaid")
-        physicalClick()
         
+        print("Выключение AutoRaid и новый круг...")
+        physicalSingleClick()
         task.wait(2)
     end
-    print(">>> ЦИКЛ ПОЛНОСТЬЮ ОСТАНОВЛЕН <<<")
+    print(">>> СКРИПТ ОСТАНОВЛЕН (X) <<<")
 end
 
--- Управление кнопками
+-- Обработка кнопок
 UserInputService.InputBegan:Connect(function(input, proc)
     if proc then return end
     if input.KeyCode == Enum.KeyCode.L then
@@ -127,11 +111,10 @@ UserInputService.InputBegan:Connect(function(input, proc)
         end
     elseif input.KeyCode == Enum.KeyCode.X then
         masterSwitch = false
-        print("СТОП СИГНАЛ ПОЛУЧЕН")
     end
 end)
 
--- Сборщик монет (фон)
+-- Фоновый сбор монет
 task.spawn(function()
     local Net = game:GetService("ReplicatedStorage"):WaitForChild("Network")
     while true do
@@ -147,4 +130,4 @@ task.spawn(function()
     end
 end)
 
-print("L - Старт | X - Стоп. Координаты клика: 240, 530")
+print("Нажми L для старта, X для стопа.")
