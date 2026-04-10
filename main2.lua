@@ -44,8 +44,8 @@ local RaidSections = {
     },
 
     { Name = "Комната 4", Points = { {Type = "Move", Pos = Vector3.new(-11.94, 109.14, -5701.22)}, {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), 20, 20)}, {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), -20, -20)}, {Type = "Move", Pos = Vector3.new(32.07, 109.14, -5696.34)}, {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), -15, -15)}, {Type = "Move", Pos = Vector3.new(10, 109.14, -5700)}, } },
-    { Name = "Комната 5", Points = { {Type = "Move", Pos = Vector3.new(126.31, 109.14, -5688.38)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 20, 0)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 0, 20)}, {Type = "Move", Pos = Vector3.new(196.80, 109.14, -5721.58)}, {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), -15, -15)}, {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), 15, 15)}, {Type = "Move", Pos = Vector3.new(160, 109.14, -5700)}, } },
-    { Name = "Комната 6", Points = { {Type = "Move", Pos = Vector3.new(290.60, 109.14, -5742.09)}, {Type = "Move", Pos = offset(Vector3.new(290.60, 109.14, -5742.09), 30, 10)}, {Type = "Move", Pos = Vector3.new(332.33, 109.14, -5704.45)}, {Type = "Move", Pos = offset(Vector3.new(332.33, 109.14, -5704.45), -20, 20)}, {Type = "Move", Pos = Vector3.new(375.73, 109.14, -5662.99)}, {Type = "Move", Pos = offset(Vector3.new(375.73, 109.14, -5662.99), -20, -10)}, {Type = "Move", Pos = Vector3.new(330, 109.14, -5700)}, } },
+    { Name = "Комната 5", Points = { {Type = "Move", Pos = Vector3.new(126.31, 109.14, -5688.38)}, {Type = "Move", Pos = Vector3.new(126.31, 109.14, -5688.38)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 20, 0)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 0, 20)}, {Type = "Move", Pos = Vector3.new(196.80, 109.14, -5721.58)}, {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), -15, -15)}, {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), 15, 15)}, {Type = "Move", Pos = Vector3.new(160, 109.14, -5700)}, } },
+    { Name = "Комната 6", Points = { {Type = "Move", Pos = Vector3.new(290.60, 109.14, -5742.09)},{Type = "Move", Pos = Vector3.new(290.60, 109.14, -5742.09)}, {Type = "Move", Pos = offset(Vector3.new(290.60, 109.14, -5742.09), 30, 10)}, {Type = "Move", Pos = Vector3.new(332.33, 109.14, -5704.45)}, {Type = "Move", Pos = offset(Vector3.new(332.33, 109.14, -5704.45), -20, 20)}, {Type = "Move", Pos = Vector3.new(375.73, 109.14, -5662.99)}, {Type = "Move", Pos = offset(Vector3.new(375.73, 109.14, -5662.99), -20, -10)}, {Type = "Move", Pos = Vector3.new(330, 109.14, -5700)}, } },
     { Name = "Комната 7", Points = { {Type = "Move", Pos = Vector3.new(447.83, 109.14, -5699.78)}, {Type = "Move", Pos = Vector3.new(490.19, 109.14, -5660.09)}, {Type = "Move", Pos = Vector3.new(507.36, 109.20, -5713.30)}, {Type = "Move", Pos = Vector3.new(547.66, 109.14, -5703.40)}, {Type = "Move", Pos = Vector3.new(607.93, 109.14, -5678.70)}, {Type = "Move", Pos = Vector3.new(682.99, 109.14, -5729.26)}, {Type = "Move", Pos = offset(Vector3.new(682.99, 109.14, -5729.26), 25, 25)}, } },
     
     { 
@@ -158,7 +158,7 @@ end
 
 -- Слушатель кнопки L
 UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.KeyCode == Enum.KeyCode.K then
+    if not processed and input.KeyCode == Enum.KeyCode.L then
         startRaid()
     end
 end)
