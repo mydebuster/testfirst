@@ -158,7 +158,7 @@ end
 
 -- Слушатель кнопки L
 UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.KeyCode == Enum.KeyCode.L then
+    if not processed and input.KeyCode == Enum.KeyCode.K then
         startRaid()
     end
 end)
