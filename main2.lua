@@ -20,8 +20,8 @@ end
 
 -- МАРШРУТ
 local RaidSections = {
-    { Name = "Комната 1", Points = { {Type = "Move", Pos = Vector3.new(-506.38, 109.14, -5721.69)}, {Type = "Move", Pos = offset(Vector3.new(-506.38, 109.14, -5721.69), 15, 15)}, {Type = "Move", Pos = Vector3.new(-447.38, 109.14, -5685.63)}, {Type = "Move", Pos = offset(Vector3.new(-447.38, 109.14, -5685.63), -15, 15)}, {Type = "Move", Pos = Vector3.new(-443.99, 109.14, -5727.37)}, {Type = "Move", Pos = offset(Vector3.new(-443.99, 109.14, -5727.37), 15, -15)}, {Type = "Move", Pos = Vector3.new(-445, 109.14, -5705)}, } },
-    { Name = "Комната 2", Points = { {Type = "Move", Pos = Vector3.new(-346.37, 109.14, -5706.03)}, {Type = "Move", Pos = offset(Vector3.new(-346.37, 109.14, -5706.03), 10, -10)}, {Type = "Move", Pos = Vector3.new(-297.09, 109.14, -5722.50)}, {Type = "Move", Pos = offset(Vector3.new(-297.09, 109.14, -5722.50), -10, 10)}, {Type = "Move", Pos = Vector3.new(-301.86, 109.14, -5674.80)}, {Type = "Move", Pos = offset(Vector3.new(-301.86, 109.14, -5674.80), 20, 0)}, {Type = "Move", Pos = Vector3.new(-320, 109.14, -5700)}, } },
+    { Name = "Комната 1", Points = { {Type = "Move", Pos = Vector3.new(-506.38, 109.14, -5721.69)}, {Type = "Move", Pos = offset(Vector3.new(-506.38, 109.14, -5721.69), 15, 15)}, {Type = "Move", Pos = Vector3.new(-447.38, 109.14, -5685.63)}, {Type = "Move", Pos = offset(Vector3.new(-447.38, 109.14, -5685.63), -15, 15)}, {Type = "Move", Pos = Vector3.new(-443.99, 109.14, -5727.37)} } },
+    { Name = "Комната 2", Points = { {Type = "Move", Pos = Vector3.new(-346.37, 109.14, -5706.03)}, {Type = "Move", Pos = offset(Vector3.new(-346.37, 109.14, -5706.03), 10, -10)}, {Type = "Move", Pos = Vector3.new(-297.09, 109.14, -5722.50)}, {Type = "Move", Pos = offset(Vector3.new(-297.09, 109.14, -5722.50), -10, 10)}, {Type = "Move", Pos = Vector3.new(-301.86, 109.14, -5674.80)} } },
     { 
         Name = "Комната 3 (Макс Сбор)", 
         Points = { 
@@ -34,12 +34,11 @@ local RaidSections = {
             {Type = "Move", Pos = offset(Vector3.new(-139.42, 109.02, -5950.68), 30, 30)},
             {Type = "Move", Pos = offset(Vector3.new(-139.42, 109.02, -5950.68), -30, -30)},
             {Type = "Move", Pos = offset(Vector3.new(-139.42, 109.02, -5950.68), 30, -30)},
-            {Type = "Move", Pos = offset(Vector3.new(-139.42, 109.02, -5950.68), -30, 30)},
-            {Type = "Move", Pos = offset(Vector3.new(-139.42, 109.02, -5950.68), 0, 45)},
+            
         } 
     },
-    { Name = "Комната 4", Points = { {Type = "Move", Pos = Vector3.new(-11.94, 109.14, -5701.22)}, {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), 20, 20)}, {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), -20, -20)}, {Type = "Move", Pos = Vector3.new(32.07, 109.14, -5696.34)}, {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), -15, -15)}, {Type = "Move", Pos = Vector3.new(10, 109.14, -5700)}, } },
-    { Name = "Комната 5", Points = { {Type = "Move", Pos = Vector3.new(126.31, 109.14, -5688.38)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 20, 0)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 0, 20)}, {Type = "Move", Pos = Vector3.new(196.80, 109.14, -5721.58)}, {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), -15, -15)}, {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), 15, 15)}, {Type = "Move", Pos = Vector3.new(160, 109.14, -5700)}, } },
+    { Name = "Комната 4", Points = { {Type = "Move", Pos = Vector3.new(-11.94, 109.14, -5701.22)}, {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), 20, 20)}, {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), -20, -20)}, {Type = "Move", Pos = Vector3.new(32.07, 109.14, -5696.34)}, {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), -15, -15)}, } },
+    { Name = "Комната 5", Points = { {Type = "Move", Pos = Vector3.new(126.31, 109.14, -5688.38)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 20, 0)}, {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 0, 20)}, {Type = "Move", Pos = Vector3.new(196.80, 109.14, -5721.58)}, {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), -15, -15)}, {Type = "Move", Pos = Vector3.new(160, 109.14, -5700)}, } },
     { Name = "Комната 6", Points = { {Type = "Move", Pos = Vector3.new(290.60, 109.14, -5742.09)}, {Type = "Move", Pos = offset(Vector3.new(290.60, 109.14, -5742.09), 30, 10)}, {Type = "Move", Pos = Vector3.new(332.33, 109.14, -5704.45)}, {Type = "Move", Pos = offset(Vector3.new(332.33, 109.14, -5704.45), -20, 20)}, {Type = "Move", Pos = Vector3.new(375.73, 109.14, -5662.99)}, {Type = "Move", Pos = offset(Vector3.new(375.73, 109.14, -5662.99), -20, -10)}, {Type = "Move", Pos = Vector3.new(330, 109.14, -5700)}, } },
     { Name = "Комната 7", Points = { {Type = "Move", Pos = Vector3.new(447.83, 109.14, -5699.78)}, {Type = "Move", Pos = Vector3.new(490.19, 109.14, -5660.09)}, {Type = "Move", Pos = Vector3.new(507.36, 109.20, -5713.30)}, {Type = "Move", Pos = Vector3.new(547.66, 109.14, -5703.40)}, {Type = "Move", Pos = Vector3.new(607.93, 109.14, -5678.70)}, {Type = "Move", Pos = Vector3.new(682.99, 109.14, -5729.26)}, {Type = "Move", Pos = offset(Vector3.new(682.99, 109.14, -5729.26), 25, 25)}, } },
     { 
@@ -143,6 +142,9 @@ local function startRaid()
     print(">>> ОЖИДАНИЕ 12 СЕКУНД ПЕРЕД ВТОРЫМ НАЖАТИЕМ... <<<")
     task.wait(12)
     physicalClickButton() -- Второе нажатие
+    print(">>> ОЖИДАНИЕ 12 СЕКУНД ПЕРЕД ВТОРЫМ НАЖАТИЕМ... <<<")
+    task.wait(12)
+    physicalClickButton() -- Второе нажатие
 
     print(">>> ВСЕ ДЕЙСТВИЯ ЗАВЕРШЕНЫ <<<")
     isRunning = false
@@ -150,7 +152,7 @@ end
 
 -- Активация на кнопку L
 UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.KeyCode == Enum.KeyCode.L then
+    if not processed and input.KeyCode == Enum.KeyCode.K then
         startRaid()
     end
 end)
