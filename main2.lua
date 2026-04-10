@@ -66,16 +66,7 @@ local RaidSections = {
     },
     { Name = "Комната 9", Points = { {Type = "Move", Pos = Vector3.new(950.32, 110.50, -5700.28)}, {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), -15, -15)}, {Type = "Move", Pos = Vector3.new(996.28, 110.53, -5702.81)}, {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), 15, 15)}, {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), -15, -15)}, {Type = "Move", Pos = Vector3.new(970, 110.53, -5700)}, } },
     { Name = "Комната НАГРАД", Points = { {Type = "Interact", Pos = Vector3.new(1094.57, 112.14, -5717.70)}, {Type = "Interact", Pos = Vector3.new(1101.89, 110.85, -5681.42)}, {Type = "Interact", Pos = Vector3.new(1164.13, 110.85, -5677.97)},  {Type = "Interact", Pos = Vector3.new(1135.07, 111.20, -5783.95)}, } },
-    { 
-        Name = "Босс и Финал", 
-        Points = { 
-            {Type = "Move", Pos = Vector3.new(1131.03, 109.94, -5636.84)}, 
-            {Type = "Move", Pos = Vector3.new(1130.40, 109.45, -5422.93)}, 
-            {Type = "Move", Pos = offset(Vector3.new(1130.40, 109.45, -5422.93), 25, 25)}, 
-            {Type = "Move", Pos = offset(Vector3.new(1130.40, 109.45, -5422.93), -25, -25)}, 
-            {Type = "Move", Pos = offset(Vector3.new(1130.40, 109.45, -5422.93), 25, -25)}, 
-            {Type = "Move", Pos = offset(Vector3.new(1130.40, 109.45, -5422.93), -25, 25)}, 
-        } 
+    
     }
 }
 
