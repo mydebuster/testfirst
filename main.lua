@@ -1,230 +1,187 @@
--- PS99 RAID MASTER (7 Точек на комнату | Задержка 5 сек | Активация: L)
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local VirtualInputManager = game:GetService("VirtualInputManager")
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
+--[[
+    Adopt Me - Auto Trade Acceptor
+    Читает usernames из файла .rfld
+    Принимает трейд 2+ раза (AcceptNegotiation + ConfirmTrade)
+    Игрок не кладёт предметы
+--]]
 
-local isRunning = false 
+local API = game.ReplicatedStorage.API
+local Players = game.Players
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
------------------------------------------------------------
--- НАСТРОЙКИ
------------------------------------------------------------
-local MOVE_SPEED = 70       -- Скорость полета
-local ACTION_DELAY = 5.0     -- Задержка после каждого действия (5 секунд)
-local INTERACT_WAIT = 1.2    -- Время нажатия кнопки E
+-- ======== НАСТРОЙКИ ========
+local USERNAMES_FILE = "usernames.rfld"  -- файл с именами
+local TRADE_DELAY = 0.3                   -- задержка между этапами
 
--- Функция для генерации смещенной точки (чтобы сделать 7 точек из 2-3)
-local function offset(vec, ox, oz)
-    return Vector3.new(vec.X + (ox or 0), vec.Y, vec.Z + (oz or 0))
-end
-
------------------------------------------------------------
--- МАРШРУТ (По 7 точек на зону)
------------------------------------------------------------
-local RaidSections = {
-    {
-        Name = "Комната 1",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(-506.38, 109.14, -5721.69)},
-            {Type = "Move", Pos = offset(Vector3.new(-506.38, 109.14, -5721.69), 20, 20)},
-            {Type = "Move", Pos = Vector3.new(-447.38, 109.14, -5685.63)},
-            {Type = "Move", Pos = offset(Vector3.new(-447.38, 109.14, -5685.63), -20, 20)},
-            {Type = "Move", Pos = Vector3.new(-443.99, 109.14, -5727.37)},
-            {Type = "Move", Pos = offset(Vector3.new(-443.99, 109.14, -5727.37), 20, -20)},
-            {Type = "Move", Pos = offset(Vector3.new(-443.99, 109.14, -5727.37), -10, -10)},
-        }
-    },
-    {
-        Name = "Комната 2",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(-346.37, 109.14, -5706.03)},
-            {Type = "Move", Pos = offset(Vector3.new(-346.37, 109.14, -5706.03), 15, -15)},
-            {Type = "Move", Pos = Vector3.new(-297.09, 109.14, -5722.50)},
-            {Type = "Move", Pos = offset(Vector3.new(-297.09, 109.14, -5722.50), -15, 15)},
-            {Type = "Move", Pos = Vector3.new(-301.86, 109.14, -5674.80)},
-            {Type = "Move", Pos = offset(Vector3.new(-301.86, 109.14, -5674.80), 20, 0)},
-            {Type = "Move", Pos = offset(Vector3.new(-301.86, 109.14, -5674.80), 0, 20)},
-        }
-    },
-    {
-        Name = "Комната 3",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(-193.19, 109.14, -5701.66)},
-            {Type = "Move", Pos = Vector3.new(-147.92, 109.14, -5698.76)},
-            {Type = "Move", Pos = offset(Vector3.new(-147.92, 109.14, -5698.76), 10, 10)},
-            {Type = "Move", Pos = Vector3.new(-94.89, 109.14, -5710.89)},
-            {Type = "Move", Pos = offset(Vector3.new(-94.89, 109.14, -5710.89), -15, -15)},
-            {Type = "Interact", Pos = Vector3.new(-142.38, 109.14, -5771.87)}, -- Кнопка
-            {Type = "Move", Pos = Vector3.new(-139.42, 109.02, -5950.68)},    -- Сундук
-        }
-    },
-    {
-        Name = "Комната 4",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(-11.94, 109.14, -5701.22)},
-            {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), 20, 20)},
-            {Type = "Move", Pos = offset(Vector3.new(-11.94, 109.14, -5701.22), -20, -20)},
-            {Type = "Move", Pos = Vector3.new(32.07, 109.14, -5696.34)},
-            {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), 15, 15)},
-            {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), -15, -15)},
-            {Type = "Move", Pos = offset(Vector3.new(32.07, 109.14, -5696.34), 0, 30)},
-        }
-    },
-    {
-        Name = "Комната 5",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(126.31, 109.14, -5688.38)},
-            {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 25, 0)},
-            {Type = "Move", Pos = offset(Vector3.new(126.31, 109.14, -5688.38), 0, 25)},
-            {Type = "Move", Pos = Vector3.new(196.80, 109.14, -5721.58)},
-            {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), -20, -20)},
-            {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), 20, 20)},
-            {Type = "Move", Pos = offset(Vector3.new(196.80, 109.14, -5721.58), 10, -10)},
-        }
-    },
-    {
-        Name = "Комната 6",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(290.60, 109.14, -5742.09)},
-            {Type = "Move", Pos = offset(Vector3.new(290.60, 109.14, -5742.09), 20, 0)},
-            {Type = "Move", Pos = Vector3.new(332.33, 109.14, -5704.45)},
-            {Type = "Move", Pos = offset(Vector3.new(332.33, 109.14, -5704.45), 0, 20)},
-            {Type = "Move", Pos = Vector3.new(375.73, 109.14, -5662.99)},
-            {Type = "Move", Pos = offset(Vector3.new(375.73, 109.14, -5662.99), -20, -20)},
-            {Type = "Move", Pos = offset(Vector3.new(375.73, 109.14, -5662.99), 10, 10)},
-        }
-    },
-    {
-        Name = "Комната 7",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(447.83, 109.14, -5699.78)},
-            {Type = "Move", Pos = Vector3.new(490.19, 109.14, -5660.09)},
-            {Type = "Move", Pos = Vector3.new(507.36, 109.20, -5713.30)},
-            {Type = "Move", Pos = Vector3.new(547.66, 109.14, -5703.40)},
-            {Type = "Move", Pos = Vector3.new(607.93, 109.14, -5678.70)},
-            {Type = "Move", Pos = Vector3.new(682.99, 109.14, -5729.26)},
-            {Type = "Move", Pos = offset(Vector3.new(682.99, 109.14, -5729.26), 30, 30)},
-        }
-    },
-    {
-        Name = "Комната 8",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(761.29, 109.14, -5741.07)},
-            {Type = "Move", Pos = Vector3.new(810.50, 109.14, -5708.46)},
-            {Type = "Move", Pos = offset(Vector3.new(810.50, 109.14, -5708.46), 20, 20)},
-            {Type = "Move", Pos = Vector3.new(861.37, 109.14, -5662.01)},
-            {Type = "Move", Pos = offset(Vector3.new(861.37, 109.14, -5662.01), -20, -20)},
-            {Type = "Interact", Pos = Vector3.new(815.10, 109.14, -5761.67)}, -- Кнопка
-            {Type = "Move", Pos = Vector3.new(812.59, 109.02, -5905.14)},    -- Сундук
-        }
-    },
-    {
-        Name = "Комната 9",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(950.32, 110.50, -5700.28)},
-            {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), 20, 20)},
-            {Type = "Move", Pos = offset(Vector3.new(950.32, 110.50, -5700.28), -20, -20)},
-            {Type = "Move", Pos = Vector3.new(996.28, 110.53, -5702.81)},
-            {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), 20, 20)},
-            {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), -20, -20)},
-            {Type = "Move", Pos = offset(Vector3.new(996.28, 110.53, -5702.81), 0, 40)},
-        }
-    },
-    {
-        Name = "Комната НАГРАД (Оригинал)",
-        Points = {
-            {Type = "Interact", Pos = Vector3.new(1094.57, 112.14, -5717.70)},
-            {Type = "Interact", Pos = Vector3.new(1101.89, 110.85, -5681.42)},
-            {Type = "Interact", Pos = Vector3.new(1164.13, 110.85, -5677.97)},
-            {Type = "Interact", Pos = Vector3.new(1165.39, 110.85, -5721.62)},
-            {Type = "Interact", Pos = Vector3.new(1135.07, 111.20, -5783.95)}
-        }
-    },
-    {
-        Name = "Босс и Выход",
-        Points = {
-            {Type = "Move", Pos = Vector3.new(1131.03, 109.94, -5636.84)},
-            {Type = "Move", Pos = Vector3.new(1130.40, 109.45, -5822.93)},
-            {Type = "Move", Pos = Vector3.new(1208.86, 109.94, -5701.94)}
-        }
-    }
-}
-
------------------------------------------------------------
--- ЛОГИКА ДВИЖЕНИЯ
------------------------------------------------------------
-
-local function moveTo(pos)
-    local char = Player.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+-- ======== ЧТЕНИЕ ФАЙЛА ========
+local function readUsernames()
+    local success, content = pcall(function()
+        return readfile(USERNAMES_FILE)
+    end)
     
-    local dist = (root.Position - pos).Magnitude
-    local info = TweenInfo.new(dist / MOVE_SPEED, Enum.EasingStyle.Linear)
-    local tween = TweenService:Create(root, info, {CFrame = CFrame.new(pos)})
+    if not success then
+        warn("❌ Не удалось прочитать файл: " .. tostring(content))
+        return {}
+    end
     
-    tween:Play()
-    tween.Completed:Wait() 
-    print("Прибыл. Ожидание 5 сек...")
-    task.wait(ACTION_DELAY) 
+    -- Парсим: каждое имя с новой строки, убираем пробелы
+    local names = {}
+    for name in content:gmatch("[^\r\n]+") do
+        name = name:match("^%s*(.-)%s*$")  -- trim
+        if name ~= "" then
+            table.insert(names, name)
+        end
+    end
+    
+    print("📋 Загружено " .. #names .. " имён из файла")
+    return names
 end
 
-local function pressE()
-    print("Нажимаю E...")
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-    task.wait(0.1)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-    task.wait(INTERACT_WAIT) 
-    task.wait(ACTION_DELAY) 
+-- ======== ПОИСК ИГРОКА ========
+local function findPlayer(username)
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr.Name:lower() == username:lower() then
+            return plr
+        end
+    end
+    return nil
 end
 
--- Фоновый сборщик монет
-task.spawn(function()
-    local Network = game:GetService("ReplicatedStorage"):WaitForChild("Network")
+-- ======== ПРОВЕРКА АКТИВНОСТИ ТРЕЙДА ========
+local function isTradeActive()
+    local tradeApp = playerGui:FindFirstChild("TradeApp")
+    if tradeApp then
+        -- Проверяем, видим ли интерфейс трейда
+        local mainFrame = tradeApp:FindFirstChild("MainFrame") or tradeApp:FindFirstChild("Frame")
+        if mainFrame and mainFrame.Visible then
+            return true
+        end
+        -- Альтернативная проверка
+        if tradeApp.Enabled then
+            return true
+        end
+    end
+    return false
+end
+
+-- ======== ПРИНЯТИЕ ТРЕЙДА ========
+local function acceptTrade()
+    print("🚀 Начинаю принятие трейда...")
+    
+    -- Этап 1: Принимаем запрос на трейд
+    local acceptReq = API:FindFirstChild("TradeAPI/AcceptOrDeclineTradeRequest")
+    if acceptReq then
+        local ok, err = pcall(acceptReq.InvokeServer, acceptReq, true)
+        if ok then
+            print("   ✅ Запрос трейда принят")
+        else
+            warn("   ❌ Ошибка принятия запроса: " .. tostring(err))
+            return false
+        end
+    end
+    
+    wait(TRADE_DELAY)
+    
+    -- Этап 2: Принимаем переговоры
+    local acceptNeg = API:FindFirstChild("TradeAPI/AcceptNegotiation")
+    if acceptNeg then
+        local ok, err = pcall(acceptNeg.FireServer, acceptNeg)
+        if ok then
+            print("   ✅ Переговоры приняты")
+        else
+            warn("   ❌ Ошибка принятия переговоров: " .. tostring(err))
+        end
+    end
+    
+    wait(TRADE_DELAY)
+    
+    -- Этап 3: Финальное подтверждение
+    local confirm = API:FindFirstChild("TradeAPI/ConfirmTrade")
+    if confirm then
+        local ok, err = pcall(confirm.FireServer, confirm)
+        if ok then
+            print("   ✅ Трейд подтверждён")
+        else
+            warn("   ❌ Ошибка подтверждения: " .. tostring(err))
+        end
+    end
+    
+    print("🏁 Трейд завершён!")
+    return true
+end
+
+-- ======== ОТПРАВКА ЗАПРОСА НА ТРЕЙД (опционально) ========
+local function sendTradeRequest(targetPlayer)
+    local sendReq = API:FindFirstChild("TradeAPI/SendTradeRequest")
+    if sendReq and targetPlayer then
+        local ok, err = pcall(sendReq.FireServer, sendReq, targetPlayer)
+        if ok then
+            print("📤 Запрос на трейд отправлен: " .. targetPlayer.Name)
+        else
+            warn("❌ Ошибка отправки запроса: " .. tostring(err))
+        end
+    end
+end
+
+-- ======== МОНИТОРИНГ ТРЕЙДА ========
+local function monitorTrade()
+    print("👀 Ожидаю появления трейд-интерфейса...")
+    
+    -- Ждём появления TradeApp
+    local tradeApp = playerGui:FindFirstChild("TradeApp")
+    if not tradeApp then
+        tradeApp = playerGui:WaitForChild("TradeApp", 30)
+    end
+    
+    if not tradeApp then
+        warn("❌ TradeApp не появился за 30 секунд")
+        return
+    end
+    
+    print("🟢 TradeApp обнаружен!")
+    
+    -- Ждём пока станет видимым (если ещё нет)
+    local attempts = 0
+    while not isTradeActive() and attempts < 50 do
+        wait(0.2)
+        attempts = attempts + 1
+    end
+    
+    if isTradeActive() then
+        print("🟢 Трейд активен! Принимаю...")
+        wait(0.5)  -- небольшая задержка перед принятием
+        acceptTrade()
+    else
+        warn("❌ Трейд не активировался")
+    end
+end
+
+-- ======== ГЛАВНАЯ ЛОГИКА ========
+local function main()
+    print("=" .. string.rep("=", 40))
+    print("🤖 Adopt Me Auto Trade Acceptor")
+    print("=" .. string.rep("=", 40))
+    
+    local usernames = readUsernames()
+    
+    if #usernames == 0 then
+        warn("❌ Нет имён в файле. Завершение.")
+        return
+    end
+    
+    -- Показываем загруженные имена
+    print("👤 Целевые игроки:")
+    for i, name in ipairs(usernames) do
+        print("   " .. i .. ". " .. name)
+    end
+    
+    -- Автоматический режим: мониторим и принимаем
     while true do
-        local things = workspace:FindFirstChild("__THINGS")
-        if things then
-            local orbs = things:FindFirstChild("Orbs")
-            if orbs and #orbs:GetChildren() > 0 then
-                local ids = {}
-                for _, v in pairs(orbs:GetChildren()) do table.insert(ids, tonumber(v.Name)) v:Destroy() end
-                Network:WaitForChild("Orbs_Collect"):FireServer(ids)
-            end
-        end
-        task.wait(0.5)
+        monitorTrade()
+        wait(2)  -- пауза перед следующей итерацией
     end
-end)
-
--- Запуск рейда
-local function startRaid()
-    if isRunning then return end
-    isRunning = true
-    
-    print(">>> ЗАПУСК ПОЛНОГО МАРШРУТА (7 точек/комната) <<<")
-    
-    -- Начальная точка
-    moveTo(Vector3.new(-525.31, 109.14, -5702.72))
-
-    for _, section in ipairs(RaidSections) do
-        print("Вхожу в: " .. section.Name)
-        for _, step in ipairs(section.Points) do
-            moveTo(step.Pos)
-            if step.Type == "Interact" then
-                pressE()
-            end
-        end
-    end
-    
-    print(">>> РЕЙД ЗАВЕРШЕН <<<")
-    isRunning = false
 end
 
--- Слушатель кнопки L
-UserInputService.InputBegan:Connect(function(input, processed)
-    if not processed and input.KeyCode == Enum.KeyCode.L then
-        startRaid()
-    end
-end)
-
-print("Скрипт ГОТОВ. Нажми 'L' для старта. В комнатах по 7 точек.")
+-- ======== ЗАПУСК ========
+main()
