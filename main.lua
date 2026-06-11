@@ -1,8 +1,6 @@
 --[[
-    Adopt Me - Auto Trade Acceptor
-    Читает usernames из файла .rfld
-    Принимает трейд 2+ раза (AcceptNegotiation + ConfirmTrade)
-    Игрок не кладёт предметы
+    Adopt Me - Auto Trade Sender + Acceptor
+    Отправляет трейд игрокам из файла и принимает его с их стороны
 --]]
 
 local API = game.ReplicatedStorage.API
@@ -11,8 +9,9 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- ======== НАСТРОЙКИ ========
-local USERNAMES_FILE = "usernames.rfld"  -- файл с именами
-local TRADE_DELAY = 0.3                   -- задержка между этапами
+local USERNAMES_FILE = "usernames.rfld"
+local TRADE_DELAY = 0.5
+local BETWEEN_TRADES_DELAY = 3  -- задержка между трейдами
 
 -- ======== ЧТЕНИЕ ФАЙЛА ========
 local function readUsernames()
@@ -25,16 +24,15 @@ local function readUsernames()
         return {}
     end
     
-    -- Парсим: каждое имя с новой строки, убираем пробелы
     local names = {}
     for name in content:gmatch("[^\r\n]+") do
-        name = name:match("^%s*(.-)%s*$")  -- trim
-        if name ~= "" then
+        name = name:match("^%s*(.-)%s*$")
+        if name ~= "" and name:lower() ~= player.Name:lower() then
             table.insert(names, name)
         end
     end
     
-    print("📋 Загружено " .. #names .. " имён из файла")
+    print("📋 Загружено " .. #names .. " имён (без своего ника)")
     return names
 end
 
@@ -48,62 +46,115 @@ local function findPlayer(username)
     return nil
 end
 
+-- ======== ОТПРАВКА ЗАПРОСА НА ТРЕЙД ========
+local function sendTradeRequest(targetPlayer)
+    print("📤 Отправляю запрос на трейд: " .. targetPlayer.Name)
+    
+    local sendReq = API:FindFirstChild("TradeAPI/SendTradeRequest")
+    if not sendReq then
+        warn("❌ TradeAPI/SendTradeRequest не найден!")
+        return false
+    end
+    
+    local ok, err = pcall(sendReq.FireServer, sendReq, targetPlayer)
+    if ok then
+        print("   ✅ Запрос отправлен")
+        return true
+    else
+        warn("   ❌ Ошибка: " .. tostring(err))
+        return false
+    end
+end
+
 -- ======== ПРОВЕРКА АКТИВНОСТИ ТРЕЙДА ========
 local function isTradeActive()
     local tradeApp = playerGui:FindFirstChild("TradeApp")
-    if tradeApp then
-        -- Проверяем, видим ли интерфейс трейда
-        local mainFrame = tradeApp:FindFirstChild("MainFrame") or tradeApp:FindFirstChild("Frame")
-        if mainFrame and mainFrame.Visible then
-            return true
-        end
-        -- Альтернативная проверка
-        if tradeApp.Enabled then
-            return true
-        end
+    if not tradeApp or not tradeApp.Enabled then
+        return false
     end
-    return false
+    
+    local tradeFrame = tradeApp:FindFirstChild("TradeFrame") 
+        or tradeApp:FindFirstChild("MainFrame")
+        or tradeApp:FindFirstChild("Frame")
+    
+    return tradeFrame ~= nil and tradeFrame.Visible == true
 end
 
--- ======== ПРИНЯТИЕ ТРЕЙДА ========
+-- ======== ОЖИДАНИЕ ПОЯВЛЕНИЯ ТРЕЙДА ========
+local function waitForTradeApp(timeout)
+    local waited = 0
+    while not isTradeActive() and waited < timeout do
+        wait(0.2)
+        waited = waited + 0.2
+    end
+    return isTradeActive()
+end
+
+-- ======== ОЖИДАНИЕ ЗАКРЫТИЯ ТРЕЙДА ========
+local function waitForTradeClose(timeout)
+    local waited = 0
+    while isTradeActive() and waited < timeout do
+        wait(0.2)
+        waited = waited + 0.2
+    end
+    if waited >= timeout then
+        warn("⚠️ Таймаут ожидания закрытия трейда")
+        return false
+    end
+    return true
+end
+
+-- ======== ПРИНЯТИЕ ТРЕЙДА (все этапы) ========
 local function acceptTrade()
-    print("🚀 Начинаю принятие трейда...")
+    print("🚀 Принимаю трейд...")
     
-    -- Этап 1: Принимаем запрос на трейд
+    -- Этап 1: AcceptOrDeclineTradeRequest
     local acceptReq = API:FindFirstChild("TradeAPI/AcceptOrDeclineTradeRequest")
     if acceptReq then
         local ok, err = pcall(acceptReq.InvokeServer, acceptReq, true)
         if ok then
-            print("   ✅ Запрос трейда принят")
+            print("   ✅ Запрос принят")
         else
-            warn("   ❌ Ошибка принятия запроса: " .. tostring(err))
+            warn("   ❌ Ошибка: " .. tostring(err))
             return false
         end
     end
     
     wait(TRADE_DELAY)
     
-    -- Этап 2: Принимаем переговоры
+    -- Этап 2: AcceptNegotiation
     local acceptNeg = API:FindFirstChild("TradeAPI/AcceptNegotiation")
     if acceptNeg then
         local ok, err = pcall(acceptNeg.FireServer, acceptNeg)
         if ok then
             print("   ✅ Переговоры приняты")
         else
-            warn("   ❌ Ошибка принятия переговоров: " .. tostring(err))
+            warn("   ❌ Ошибка: " .. tostring(err))
         end
     end
     
     wait(TRADE_DELAY)
     
-    -- Этап 3: Финальное подтверждение
+    -- Этап 3: ConfirmTrade (первый раз)
     local confirm = API:FindFirstChild("TradeAPI/ConfirmTrade")
     if confirm then
         local ok, err = pcall(confirm.FireServer, confirm)
         if ok then
-            print("   ✅ Трейд подтверждён")
+            print("   ✅ Подтверждение 1")
         else
-            warn("   ❌ Ошибка подтверждения: " .. tostring(err))
+            warn("   ❌ Ошибка: " .. tostring(err))
+        end
+    end
+    
+    wait(TRADE_DELAY)
+    
+    -- Этап 4: ConfirmTrade (второй раз - финальное)
+    if confirm then
+        local ok, err = pcall(confirm.FireServer, confirm)
+        if ok then
+            print("   ✅ Подтверждение 2 (финальное)")
+        else
+            warn("   ❌ Ошибка: " .. tostring(err))
         end
     end
     
@@ -111,76 +162,93 @@ local function acceptTrade()
     return true
 end
 
--- ======== ОТПРАВКА ЗАПРОСА НА ТРЕЙД (опционально) ========
-local function sendTradeRequest(targetPlayer)
-    local sendReq = API:FindFirstChild("TradeAPI/SendTradeRequest")
-    if sendReq and targetPlayer then
-        local ok, err = pcall(sendReq.FireServer, sendReq, targetPlayer)
-        if ok then
-            print("📤 Запрос на трейд отправлен: " .. targetPlayer.Name)
-        else
-            warn("❌ Ошибка отправки запроса: " .. tostring(err))
-        end
-    end
-end
-
--- ======== МОНИТОРИНГ ТРЕЙДА ========
-local function monitorTrade()
-    print("👀 Ожидаю появления трейд-интерфейса...")
+-- ======== ОБРАБОТКА ОДНОГО ТРЕЙДА ========
+local function processOneTrade(targetName)
+    print("\n" .. string.rep("-", 30))
+    print("🎯 Цель: " .. targetName)
     
-    -- Ждём появления TradeApp
-    local tradeApp = playerGui:FindFirstChild("TradeApp")
-    if not tradeApp then
-        tradeApp = playerGui:WaitForChild("TradeApp", 30)
+    -- Ищем игрока
+    local targetPlayer = findPlayer(targetName)
+    if not targetPlayer then
+        warn("❌ Игрок не найден на сервере: " .. targetName)
+        return false
     end
     
-    if not tradeApp then
-        warn("❌ TradeApp не появился за 30 секунд")
-        return
+    print("✅ Игрок найден: " .. targetPlayer.Name)
+    
+    -- Отправляем запрос на трейд
+    local sent = sendTradeRequest(targetPlayer)
+    if not sent then
+        return false
     end
     
-    print("🟢 TradeApp обнаружен!")
+    -- Ждём появления трейд-интерфейса (игрок должен принять запрос)
+    print("⏳ Ожидаю, пока игрок примет запрос...")
+    local appeared = waitForTradeApp(15)
     
-    -- Ждём пока станет видимым (если ещё нет)
-    local attempts = 0
-    while not isTradeActive() and attempts < 50 do
-        wait(0.2)
-        attempts = attempts + 1
+    if not appeared then
+        warn("❌ Трейд не появился (игрок не принял или таймаут)")
+        return false
     end
     
-    if isTradeActive() then
-        print("🟢 Трейд активен! Принимаю...")
-        wait(0.5)  -- небольшая задержка перед принятием
-        acceptTrade()
-    else
-        warn("❌ Трейд не активировался")
+    print("🟢 Трейд открыт! Принимаю со своей стороны...")
+    wait(0.5)
+    
+    -- Принимаем трейд
+    local accepted = acceptTrade()
+    
+    if accepted then
+        -- Ждём закрытия окна
+        print("⏳ Ожидаю закрытия трейд-окна...")
+        waitForTradeClose(10)
     end
+    
+    return accepted
 end
 
 -- ======== ГЛАВНАЯ ЛОГИКА ========
 local function main()
     print("=" .. string.rep("=", 40))
-    print("🤖 Adopt Me Auto Trade Acceptor")
+    print("🤖 Adopt Me Trade Bot (Sender + Acceptor)")
     print("=" .. string.rep("=", 40))
+    print("👤 Ваш ник: " .. player.Name)
     
     local usernames = readUsernames()
     
     if #usernames == 0 then
-        warn("❌ Нет имён в файле. Завершение.")
+        warn("❌ Нет имён в файле. Создайте файл " .. USERNAMES_FILE)
         return
     end
     
-    -- Показываем загруженные имена
-    print("👤 Целевые игроки:")
+    print("\n📋 Очередь трейдов:")
     for i, name in ipairs(usernames) do
         print("   " .. i .. ". " .. name)
     end
     
-    -- Автоматический режим: мониторим и принимаем
-    while true do
-        monitorTrade()
-        wait(2)  -- пауза перед следующей итерацией
+    print("\n⏱ Задержка между трейдами: " .. BETWEEN_TRADES_DELAY .. " сек")
+    print("🚀 Начинаю отправку трейдов...\n")
+    
+    -- Проходим по всем именам
+    for i, targetName in ipairs(usernames) do
+        print("\n📊 Прогресс: " .. i .. "/" .. #usernames)
+        
+        local success = processOneTrade(targetName)
+        
+        if success then
+            print("✅ Трейд с " .. targetName .. " завершён успешно!")
+        else
+            print("❌ Трейд с " .. targetName .. " не удался")
+        end
+        
+        -- Задержка перед следующим трейдом
+        if i < #usernames then
+            print("⏳ Ожидание " .. BETWEEN_TRADES_DELAY .. " сек перед следующим...")
+            wait(BETWEEN_TRADES_DELAY)
+        end
     end
+    
+    print("\n🏁 Все трейды обработаны!")
+    print("📊 Успешно: обработаны все " .. #usernames .. " игроков")
 end
 
 -- ======== ЗАПУСК ========
